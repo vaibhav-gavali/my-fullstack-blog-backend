@@ -1,7 +1,14 @@
 import express from 'express';
 import fs from 'fs';
+import path from 'path';
 import admin from 'firebase-admin';
+import 'dotenv/config';
 import { db, connectToDb } from './db.js';
+
+// Due to usage of type module
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // localhost:3000/articles/learn-node
 // PUT /articles/learn-react/upvote
@@ -13,6 +20,15 @@ admin.initializeApp({
 
 const app = express();
 app.use(express.json()); // If we want req.body to work in express js
+// For deployment
+app.use(express.static(path.join(__dirname, '../build')));
+
+//For routes that don't start with "api"
+app.get(/^(?!\/api).+/, (req, res) => {
+  // whenever browser send the request that is not for APIs we are going to send the
+  // index.html that will load our react script
+  res.sendFile(path.join(__dirname, '../build/index.html'));
+});
 
 app.use(async (req, res, next) => {
   const { authtoken } = req.headers;
@@ -100,9 +116,11 @@ app.post('/api/articles/:name/comments', async (req, res) => {
   }
 });
 
+const PORT = process.env.PORT || 8000;
+
 connectToDb(() => {
   console.log('Successfully connected to database');
-  app.listen(8000, () => {
-    console.log('server is listening on port 8000');
+  app.listen(PORT, () => {
+    console.log('server is listening on port ' + PORT);
   });
 });
