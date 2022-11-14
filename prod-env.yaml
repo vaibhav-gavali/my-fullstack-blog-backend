@@ -1,0 +1,3 @@
+env_variables:
+  MONGO_USERNAME: mongodb-server
+  MONGO_PASSWORD: TrxP7MAuGAYEl4qP
